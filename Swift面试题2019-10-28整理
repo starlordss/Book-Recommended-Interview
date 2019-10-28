@@ -1,0 +1,409 @@
+#### 什么是函数式编程
+函数式编程是将计算机运算看做是数学的函数计算，避免了状态以及变量的概念。
+主要思想是把运算过程尽量写成一系列嵌套的函数调用
+
+
+#### Swift相对于OC有哪些优点
+1. 快、简洁、易于维护
+2. 类型更安全，optional的使用更加考验程序员对代码安全的掌控
+3. 泛型、结构体、枚举都更强大
+4. 函数为一等公民，便捷的函数式编程
+5. 引入了命名空间，从此不用再import其他文件
+6. 开源、跨平台
+7. 类型推断（从此不用在定义时就显示的给出变量类型，编译器可以靠上下文进行推断）
+
+#### 什么是泛型,swift在哪些地方使用了泛型
+
+* 泛型(generic)。使用泛型可以最大限度地重用代码、保护类型的安全以及提高性能。
+* 定义一个交换两个变量的函数
+
+#### 实现一个min函数，返回两个元素较小的元素
+```
+func minValue<T: Comparable>(_ a: T,_ b: T) -> T {
+    return a < b ? a : b
+}
+
+minValue(1.3, 1)
+```
+
+#### 给个数组，用swift写个函数，交换数组中的两个元素。
+
+```swift
+var nums = [1, 2, 3, 4, 5, 6, 7]
+
+//
+func swap<T>(_ array: [T],_ fIdx: Int,_ tIdx: Int) {
+    let count = array.count
+    if fIdx == tIdx || fIdx < 0 || fIdx > count - 1 || tIdx < 0 || tIdx > count - 1 {
+        return
+    }
+    
+    // 元祖
+    (nums[fIdx], nums[tIdx]) = (nums[tIdx], nums[fIdx])
+}
+```
+
+#### defer、guard的作用
+
+defer 包体中的内容会在离开作用域的时候执行
+guard 过滤器,拦截器
+
+
+#### swift语法糖 ？！的本质
+？ 为optional的语法糖
+
+`Optional<T>` 是一个包含了 nil 和 普通类型的枚举，确保使用者在变量为nil的情况下的处理
+
+!  为optional强制解包的语法糖
+
+
+#### Swift中closure与OC中block的区别
+
+* closure是匿名函数、block是一个结构体对象
+* closure通过逃逸闭包来在block内部修改变量，block 通过 __block 修饰符
+
+#### Swift 中的weak，unowned，Closure Capture List
+用weak还是用unowned，和对象的lifetime（生命周期）有关；
+
+如果两个对象的生命周期完全和对方没关系（其中一方什么时候赋值为nil，对对方都没影响），请用weak（来解决Reference Cycle）；
+
+如果你有十足信心确保：其中一个对象销毁，另一个对象也要跟着销毁，这时候，可以（谨慎）用unowned（来解决Reference Cycle）；
+
+closure capture list，是在closures（闭包）内，把capture（捕抓）到的对象、值，放到一个方括号中的语法。在方括号（capture list）中，可以利用weak、unowned关键字把默认的strong reference 改为非strong reference，从而解决closures和类实例（class instance）之间的Reference Cycle；
+
+Xcode 8 推出的工具Debug Memory Graph可以在App运行时十分方便定位到产生Reference Cycle的代码
+
+
+#### Swift中private与fileprivate的区别
+private的作用域被约束与被定义的当前类作用域，fileprivate作用域是整个文件
+
+#### Set 独有的方法有哪些
+
+```
+intersect（_:）// 根据两个集合中都包含的值创建的一个新的集合
+exclusiveOr(_:) // 根据只在一个集合中但不在两个集合中的值创建一个新的集合
+union(_:) // 根据两个集合的值创建一个新的集合
+subtract(_:) //根据不在该集合中的值创建一个新的集合
+
+isSubsetOf(_:) //判断一个集合中的值是否也被包含在另外一个集合中
+isSupersetOf(_:) //判断一个集合中包含的值是否含有另一个集合中所有的值
+isStrictSubsetOf(:) isStrictSupersetOf(:) //判断一个集合是否是另外一个集合的子集合或者父集合并且和特定集合不相等
+isDisjointWith(_:) //判断两个集合是否不含有相同的值
+```
+
+
+
+
+#### map、filter、reduce FlatMap 的作用
+
+
+```
+let arr = [1, 3, 5, 7, 9]
+
+// Map方法作用是把数组[T]通过闭包函数把每一个数组中的元素变成U类型的值，最后组成数组[U]
+let strArr = arr.map {
+    return "\($0)"
+}
+
+// 用于选择数组元素中满足某种条件的元素
+let filterArr = arr.filter {
+    return $0 > 1
+}
+
+// reduce 把数组元素组合计算为一个值
+let reduceArr = arr.reduce(0) {
+    return $0 + $1
+}
+
+// 可以集合，将处理后得到数据，组合到同一个数组中
+let flatMapArr = arr.flatMap {
+    return ["\($0)个","\($0 )只"]
+}
+
+
+```
+
+#### 什么是 copy on write
+
+copy on write, 写时复制，简称COW，它通过浅拷贝(shallow copy)只复制引用而避免复制值；当的确需要进行写入操作时，首先进行值拷贝，在对拷贝后的值执行写入操作，这样减少了无谓的复制耗时。
+[Swift写时复制(copy-on-write)](https://www.jianshu.com/p/e8b1336d9d5d)
+
+
+#### class 和 struct 的区别
+1. struct值类型传递，自动线程安全
+2. struct没有引用计数，不会因为循环引用从而导致内存泄漏
+3. struct值类型通常是以栈的形式分配的，效率比class 要更快
+4. struct方法中修改属性，需要添加mutating，而class 不需要
+5. struct没有继承功能,而class有继承功能
+
+
+#### String 与 NSString 的关系与区别
+
+String类型是值类型(不再是对象类型)，字符串在进行常量、变量赋值操作或在函数/方法中传递时，会进行值拷贝。 任何情况下，都会对已有字符串值创建新副本，并对该新副本进行传递或赋值操作。
+
+String 是一个结构体，性能更高；NSString 是一个 NSObject 对象，性能相对会差
+
+
+
+#### throws 和 rethrows 的用法与作用
+
+当闭包参数会抛出异常时使用throws
+
+同时外部方法体返回结果需要  rethrows 异常
+
+rethrows可以用throws 替换, 反过来不行
+
+#### try？ 和 try！是什么意思
+不处理错误，抛出异常函数时, 如果函数抛出异常, 则返回 nil, 否则返回函数返回值的可选值,
+
+保证不会出现错误 强制解，抛出异常的时候崩溃, 否则则返会函数返回值
+
+#### associatedtype 的作用
+
+关联类型，关联类型为协议中的某个类型提供了一个别名，其代表的真实类型在实现者中定义
+```
+protocol ListProtcol {
+    associatedtype Element
+    func push(_ element:Element)
+    func pop(_ element:Element) -> Element?
+}
+
+
+
+class IntList: ListProtcol {
+    typealias Element = Int // 使用 typealias 指定为 Int
+    var list = [Element]()
+    func push(_ element: Element) {
+        self.list.append(element)
+    }
+    func pop(_ element: Element) -> Element? {
+        return self.list.popLast()
+    }
+}
+class DoubleList: ListProtcol {
+    var list = [Double]()
+    func push(_ element: Double) {// 自动推断
+        self.list.append(element)
+    }
+    func pop(_ element: Double) -> Double? {
+        return self.list.popLast()
+    }
+}
+```
+
+#### public 和 open 的区别
+
+open子类可以继承
+> open > public > interal > fileprivate > private。
+
+
+##### 声明一个只有一个参数没有返回值闭包的别名
+
+`typealias aClosure = (Int) -> (Void)`
+
+#### dynamic 的作用
+由于swift是一个静态语言, 所以没有Objective-C 中的消息发送这些动态机制, dynamic的作用就是让 swift代码也能有Objective-C中的动态机制,常用的地方就是KVO了,如果要监控一个属性,则必须要标记为dynamic
+
+
+#### 如何声明一个只能被类准守的protocol
+声明协议的时候, 加一个 class 即可
+```
+protocol ClassProtocol: class {
+    func someFunction()
+}
+
+```
+
+
+#### 什么时候使用final
+
+final可用于限制继承和重写. 如果只是需要在某一个属性前加一个 final.
+如果需要限制整个类无法被继承, 那么可以在类名之前加一个final
+
+#### 不通过继承，代码复用（共享）的方式有哪些
+扩展, 全局函数
+
+
+#### Optional（可选型）是用什么实现的
+Optional 是一个泛型枚举
+```
+enum Optional<Wrapped> {
+  case none
+  case some(Wrapped)
+}
+```
+
+#### ?? 的作用
+可选值的默认值, 当可选值为nil 的时候, 会返回后面的值. 如
+let someValue = optional1 ?? 0
+
+
+#### lazy 的作用
+懒加载, 当属性要使用的时候, 才去完成初始化
+
+
+#### 如何自定义下标获取
+```
+extension Demo {
+   subscript(index: Int) -> Int {
+      get {
+        // 返回一个适当的 Int 类型的值
+      }
+      set(newValue) {
+        // 执行适当的赋值操作
+      }
+    }
+}
+```
+
+#### 一个类型表示选项，可以同时表示有几个选项选中（类似 UIViewAnimationOptions ），用什么类型表示
+
+需要实现自OptionSet, 一般使用 struct 实现. 由于 OptionSet 要求有一个不可失败的init(rawValue:) 构造器, 而 枚举无法做到这一点(枚举的原始值构造器是可失败的, 而且有些组合值, 是没办法用一个枚举值表示的)
+
+```
+struct SomeOption: OptionSet {
+    let rawValue: Int
+    static let option1 =  SomeOption(rawValue: 1 << 0)
+    static let option2 =  SomeOption(rawValue:1 << 1)
+    static let option3 =  SomeOption(rawValue:1 << 2)
+}
+
+
+let ops: SomeOption = [.option1, .option2]
+```
+
+
+#### inout的作用
+inout关键字的作用即引用传递，可以在函数内改变函数外的值。
+
+
+#### Error如果要兼容NSError需要做什么操作
+Error是一个协议, swift中的Error 都是enum， 可以转 NSError
+
+如果需要Error有NSError的功能，实现 LocalizedError CustomNSError 协议
+
+#### 什么是高阶函数
+高阶函数（high order func），指可以将其他函数作为参数或者返回结果的函数
+
+#### 如何解决引用循环
+转换为值类型, 只有类会存在引用循环, 所以如果能不用类, 是可以解引用循环的
+
+delegate 使用 weak 属性.
+
+闭包中, 对有可能发生循环引用的对象, 使用 weak 或者 unowned修饰
+
+
+#### 下面的代码会不会崩溃，说出原因
+```swift
+var mutableArray = [1,2,3]
+for _ in mutableArray {
+    mutableArray.removeLast()
+}
+```
+不会，值类型
+
+
+#### 给集合中元素是字符串的类型增加一个扩展方法，应该怎么声明
+
+```swift
+extension Array where Element == String {
+    var isStringElement:Bool {
+        return true
+    }
+}
+["1", "2"].isStringElement
+```
+
+#### 定义静态方法时关键字static和class有什么区别
+
+非class类型一般用 static例如枚举 结构体
+
+protocol中使用 static ,实现协议的 枚举 结构体 用 static
+
+class 中使用class static 都可以
+
+
+#### 一个Sequence的索引是不是一定从 0 开始？
+
+不一定, 两个 for in 并不能保证都是从 0 开始, 且输出结果一致, 官方文档如下
+
+
+#### 数组都实现了哪些协议
+MutableCollection, 实现了可修改的数组, 如 a[1] = 2
+ExpressibleByArrayLiteral, 实现了数组可以从[1, 2, 3] 这种字面值初始化的能力
+
+#### 如何自定义模式匹配
+
+```swift
+infix operator =~
+
+func =~ (str: String, pattern: String) -> Bool {
+
+    
+}
+
+infix、  prefix、  postfix  用于自定义表达式的声明， 分别表示 中缀、前缀、后缀
+
+```
+
+
+#### autoclosure 的作用
+自动闭包, 会自动将某一个表达式封装为闭包. 如
+
+```swift
+func autoClosureFunction(_ closure: @autoclosure () -> Int) {
+   closure()
+}
+autoClosureFunction(1)
+```
+
+
+#### 编译选项 whole module optmization 优化了什么
+编译器可以跨文件优化编译代码, 不局限于一个文件.
+
+
+#### 如何让自定义对象支持字面量初始化
+
+```
+有几个协议, 分别是
+ExpressibleByArrayLiteral 可以由数组形式初始化
+ExpressibleByDictionaryLiteral 可以由字典形式初始化
+ExpressibleByNilLiteral 可以由nil 值初始化
+ExpressibleByIntegerLiteral 可以由整数值初始化
+ExpressibleByFloatLiteral 可以由浮点数初始化
+ExpressibleByBooleanLiteral 可以由布尔值初始化
+ExpressibleByUnicodeScalarLiteral
+ExpressibleByExtendedGraphemeClusterLiteral
+ExpressibleByStringLiteral
+这三种都是由字符串初始化, 上面两种包含有 Unicode 字符和特殊字符
+```
+
+#### dynamic framework 和 static framework 的区别是什么
+
+静态库和动态库, 静态库是每一个程序单独打包一份, 而动态库则是多个程序之间共享
+
+
+#### 为什么数组索引越界会崩溃，而字典用下标取值时 key 没有对应值的话返回的是 nil 不会崩溃。
+
+数组的对象的储蓄地址是连续的，如果越界了，那取到的地址不一定可用，所以报错。
+
+
+#### 个函数的参数类型只要是数字（Int、Float）都可以，要怎么表示。
+
+泛型准守Numeric
+```swift
+func myMethod(_ value: T) where T: Numeric {
+    print(value + 1)
+} 
+```
+
+
+#### Swift的静态派发
+
+静态派发是一种更高效的方式，因为静态派发免去了查表操作。
+
+不过静态派发是有条件的，方法内部的代码必须对编译器透明，并且在运行时不能被更改，这样编译器才能帮助我们。
+
+Swift 中的值类型不能被继承，也就是说值类型的方法实现不能被修改或者被复写，因此值类型的方法满足静态派发的要求。
+
+默认静态派发，如果需要满足动态派发，需要 dymanic修饰
